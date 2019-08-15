@@ -3,10 +3,11 @@ import sbt._
 object Dependencies {
 
   val logback             = "ch.qos.logback"               %  "logback-classic"      % "1.2.3"
+  val mysql               = "mysql"                        %  "mysql-connector-java" % "8.0.17"
   val awsLambdaCore       = "com.amazonaws"                %  "aws-lambda-java-core" % "1.2.0"
   val enumeratum          = "com.beachape"                 %% "enumeratum"           % "1.5.13"
-  val guice               = "com.google.inject"            % "guice"                 % "4.2.2"
-  val guiceAssistedInject = "com.google.inject.extensions" % "guice-assistedinject"  % "4.2.2"
+  val guice               = "com.google.inject"            %  "guice"                % "4.2.2"
+  val guiceAssistedInject = "com.google.inject.extensions" %  "guice-assistedinject" % "4.2.2"
   val scalatest           = "org.scalatest"                %% "scalatest"            % "3.0.8"
 
   sealed trait BaseProject {
@@ -20,7 +21,7 @@ object Dependencies {
   }
 
   object Infrastructure extends BaseProject {
-    val compileDependencies = compile()
+    val compileDependencies = compile(mysql)
     val testDependencies = test(scalatest)
   }
 
