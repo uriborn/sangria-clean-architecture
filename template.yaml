@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple CRUD webservice. State is stored in a SimpleTable (DynamoDB) resource.
+Resources:
+  HelloWorld:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.sangria_clean_architecture.components.HumanComponent
+      CodeUri: ./modules/adapters/target/scala-2.12/sangria-clean-architecture-adapters-assembly-0.1.0-SNAPSHOT.jar
+      Runtime: java8
+      Timeout: 5000
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: put

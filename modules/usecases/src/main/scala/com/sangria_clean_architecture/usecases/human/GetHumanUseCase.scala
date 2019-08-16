@@ -3,23 +3,24 @@ package com.sangria_clean_architecture.usecases.human
 import com.google.inject.Inject
 import com.sangria_clean_architecture.entities.human.HumanId
 import com.sangria_clean_architecture.gateway.repositories.HumanRepository
-import com.sangria_clean_architecture.usecases.{OutputBoundary, UseCaseInteractor}
+import com.sangria_clean_architecture.usecases.UseCase
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetHumanUseCase @Inject()(
-  outputBoundary: OutputBoundary[GetHumanOutput],
   humanRepository: HumanRepository
-)(implicit ec: ExecutionContext) extends UseCaseInteractor[GetHumanInput, GetHumanOutput](outputBoundary) {
+) extends UseCase[GetHumanInput, Option[GetHumanOutput]] {
 
-  override protected def call(inputData: GetHumanInput): Future[GetHumanOutput] = {
+  override def execute(inputData: GetHumanInput)(implicit ec: ExecutionContext): Future[Option[GetHumanOutput]] = {
     for {
       human <- humanRepository.findById(HumanId(inputData.id))
-    } yield GetHumanOutput(
-      id = human.id.value,
-      name = human.name.value,
-      episodes = human.episodes.map(_.entryName),
-      homePlanet = human.homePlanet.map(_.entryName)
+    } yield human.map(h =>
+      GetHumanOutput(
+        id = h.id.value,
+        name = h.name.value,
+        episodes = h.episodes.map(_.entryName),
+        homePlanet = h.homePlanet.map(_.entryName)
+      )
     )
   }
 
