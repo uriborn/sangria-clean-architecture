@@ -1,8 +1,8 @@
-package com.sangria_clean_architecture.graphql.resolvers.human
+package com.sangria_clean_architecture.graphql.resolvers
 
 import com.google.inject.Inject
-import com.sangria_clean_architecture.graphql.resolvers.HumanSchemaValue
-import com.sangria_clean_architecture.usecases.human.{GetAllHumansInput, GetAllHumansOutput, GetAllHumansUseCase, GetHumanInput, GetHumanOutput, GetHumanUseCase}
+import com.sangria_clean_architecture.graphql.schemas.HumanSchemaValue
+import com.sangria_clean_architecture.usecases.human._
 
 import scala.concurrent.{ExecutionContext, Future}
 

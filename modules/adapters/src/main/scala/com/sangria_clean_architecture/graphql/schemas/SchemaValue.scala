@@ -1,5 +1,4 @@
-package com.sangria_clean_architecture.graphql.resolvers
-
+package com.sangria_clean_architecture.graphql.schemas
 
 trait SchemaValue
 
@@ -15,3 +14,10 @@ case class HumanSchemaValue(
    episodes: List[String],
    homePlanet: Option[String]
  ) extends CharacterSchemaValue
+
+case class DroidSchemaValue(
+  id: Long,
+  name: String,
+  episodes: List[String],
+  primaryFunction: Option[String]
+) extends CharacterSchemaValue

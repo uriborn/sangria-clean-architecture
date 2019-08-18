@@ -1,19 +1,19 @@
 package com.sangria_clean_architecture.graphql.schemas
 
 import com.google.inject.Inject
-import com.sangria_clean_architecture.graphql.resolvers.HumanResolver
+import com.sangria_clean_architecture.graphql.resolvers.DroidResolver
 import sangria.schema._
 
 import scala.concurrent.ExecutionContext
 
-class HumanSchema @Inject()(
-  humanResolver: HumanResolver
+class DroidSchema @Inject()(
+  droidResolver: DroidResolver
 ) extends StarWarsCharacterSchema {
 
-  val humanObject = ObjectType(
-    name = "Human",
-    interfaces = interfaces[Unit, HumanSchemaValue](starWarsCharacterInterface),
-    fields = fields[Unit, HumanSchemaValue](
+  val droidObject = ObjectType(
+    name = "Droid",
+    interfaces = interfaces[Unit, DroidSchemaValue](starWarsCharacterInterface),
+    fields = fields[Unit, DroidSchemaValue](
       Field(name = "id",       fieldType = LongType,              resolve = _.value.id),
       Field(name = "name",     fieldType = StringType,            resolve = _.value.name),
       Field(name = "episodes", fieldType = ListType(episodeEnum), resolve = _.value.episodes)
@@ -26,16 +26,16 @@ class HumanSchema @Inject()(
 
   def queries(implicit ec: ExecutionContext): List[Field[Unit, Unit]] = List(
     Field(
-      name = "human",
-      fieldType = OptionType(humanObject),
+      name = "droid",
+      fieldType = OptionType(droidObject),
       arguments = idArgument :: Nil,
-      resolve = ctx => humanResolver.findHuman(ctx.arg(idArgument))
+      resolve = ctx => droidResolver.findDroid(ctx.arg(idArgument))
     ),
     Field(
-      name = "humans",
-      fieldType = ListType(humanObject),
+      name = "droids",
+      fieldType = ListType(droidObject),
       arguments = limitArgument :: offsetArgument :: Nil,
-      resolve = ctx => humanResolver.findAllHumans(ctx.arg(limitArgument), ctx.arg(offsetArgument))
+      resolve = ctx => droidResolver.findAllDroids(ctx.arg(limitArgument), ctx.arg(offsetArgument))
     )
   )
 
