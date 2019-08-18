@@ -33,4 +33,5 @@ class HumanComponentExecutor @Inject()(
       case Failure(error)    => QueryParseError(error.getMessage).asJsonStr
     }
   }
+
 }

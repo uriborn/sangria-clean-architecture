@@ -16,6 +16,24 @@ class HumanRDBRepository @Inject()(
   private val he = HumanEpisodeTable.syntax("he")
   private val e = EpisodeTable.syntax("e")
 
+  override def findAll(implicit ec: ExecutionContext): Future[List[Human]] = Future {
+    DB.readOnly { implicit session =>
+      withSQL[HumanTable] {
+        select
+          .from(HumanTable as h)
+          .innerJoin(HumanEpisodeTable as he).on(h.id, he.humanId)
+          .innerJoin(EpisodeTable as e).on(e.id, he.episodeId)
+      }.one(HumanTable(h))
+        .toManies(
+          rs => HumanEpisodeTable.opt(he)(rs),
+          rs => EpisodeTable.opt(e)(rs)
+        )
+        .map(combineTables(_, _, _))
+        .list.apply
+        .map(humanConverter.convertToEntity)
+    }
+  }
+
   override def findById(id: HumanId)(implicit ec: ExecutionContext): Future[Option[Human]] = Future {
     DB.readOnly { implicit session =>
       withSQL[HumanTable] {

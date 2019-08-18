@@ -39,6 +39,8 @@ class HumanSchema @Inject()(humanResolver: HumanResolver) {
   )
 
   val idArgument = Argument("id", LongType)
+  val limitArgument = Argument("limit", IntType)
+  val offsetArgument = Argument("offset", IntType)
 
   def queries(implicit ec: ExecutionContext): List[Field[Unit, Unit]] = List(
     Field(
@@ -46,6 +48,12 @@ class HumanSchema @Inject()(humanResolver: HumanResolver) {
       fieldType = OptionType(humanObject),
       arguments = idArgument :: Nil,
       resolve = ctx => humanResolver.findHuman(ctx.arg(idArgument))
+    ),
+    Field(
+      name = "humans",
+      fieldType = ListType(humanObject),
+      arguments = limitArgument :: offsetArgument :: Nil,
+      resolve = ctx => humanResolver.findAllHumans(ctx.arg(limitArgument), ctx.arg(offsetArgument))
     )
   )
 
