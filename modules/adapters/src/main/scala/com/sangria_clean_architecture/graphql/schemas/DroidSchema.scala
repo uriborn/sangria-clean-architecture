@@ -14,15 +14,11 @@ class DroidSchema @Inject()(
     name = "Droid",
     interfaces = interfaces[Unit, DroidSchemaValue](starWarsCharacterInterface),
     fields = fields[Unit, DroidSchemaValue](
-      Field(name = "id",       fieldType = LongType,              resolve = _.value.id),
-      Field(name = "name",     fieldType = StringType,            resolve = _.value.name),
-      Field(name = "episodes", fieldType = ListType(episodeEnum), resolve = _.value.episodes)
+      Field(name = "id",       fieldType = LongType,                resolve = _.value.id),
+      Field(name = "name",     fieldType = StringType,              resolve = _.value.name),
+      Field(name = "episodes", fieldType = ListType(episodeObject), resolve = _.value.episodes)
     )
   )
-
-  val idArgument = Argument("id", LongType)
-  val limitArgument = Argument("limit", IntType)
-  val offsetArgument = Argument("offset", IntType)
 
   def queries(implicit ec: ExecutionContext): List[Field[Unit, Unit]] = List(
     Field(

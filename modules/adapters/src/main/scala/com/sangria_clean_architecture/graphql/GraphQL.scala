@@ -11,8 +11,9 @@ class GraphQL @Inject()(
   droidSchema: DroidSchema
 ) {
 
-  def schema(implicit ec: ExecutionContext) = {
+  def schema(implicit ec: ExecutionContext): Schema[Unit, Unit] = {
     val queryFields = humanSchema.queries ++ droidSchema.queries
+    val mutationFields = humanSchema.mutations
 
     Schema(
       query = ObjectType(
@@ -20,7 +21,13 @@ class GraphQL @Inject()(
         fields = fields(
           queryFields: _*
         )
-      )
+      ),
+      mutation = Some(ObjectType(
+        name = "mutation",
+        fields = fields(
+          mutationFields: _*
+        )
+      ))
     )
   }
 

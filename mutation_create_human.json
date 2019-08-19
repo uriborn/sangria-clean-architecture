@@ -1,0 +1,5 @@
+{
+  "query": "mutation { createHuman(name: \"Obi-Wan Kenobi\", episodes: [{id: 3, name: \"Jedi\"}]) { id name episodes { name } } }",
+  "operationName": "operationName",
+  "variables": "variables"
+}

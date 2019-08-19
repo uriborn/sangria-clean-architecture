@@ -1,5 +1,5 @@
 CREATE TABLE `human` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `home_planet` VARCHAR(50),
   PRIMARY KEY (`id`)

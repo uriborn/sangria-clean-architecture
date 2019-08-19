@@ -1,7 +1,7 @@
 package com.sangria_clean_architecture.graphql.resolvers
 
 import com.google.inject.Inject
-import com.sangria_clean_architecture.graphql.schemas.DroidSchemaValue
+import com.sangria_clean_architecture.graphql.schemas.{DroidSchemaValue, EpisodeSchemaValue}
 import com.sangria_clean_architecture.usecases.droid._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,7 +26,7 @@ class DroidResolver @Inject()(
       DroidSchemaValue(
         id = o.id,
         name = o.name,
-        episodes = o.episodes,
+        episodes = o.episodes.map(e => convertEpisode(e.id, e.name)),
         primaryFunction = o.primaryFunction
       )
     }
@@ -37,10 +37,17 @@ class DroidResolver @Inject()(
       DroidSchemaValue(
         id = o.id,
         name = o.name,
-        episodes = o.episodes,
+        episodes = o.episodes.map(e => convertEpisode(e.id, e.name)),
         primaryFunction = o.primaryFunction
       )
     }
+  }
+
+  private def convertEpisode(id: Long, name: String): EpisodeSchemaValue = {
+    EpisodeSchemaValue(
+      id = id,
+      name = name
+    )
   }
 
 }

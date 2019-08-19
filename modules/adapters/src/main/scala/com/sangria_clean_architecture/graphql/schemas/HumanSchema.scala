@@ -14,15 +14,11 @@ class HumanSchema @Inject()(
     name = "Human",
     interfaces = interfaces[Unit, HumanSchemaValue](starWarsCharacterInterface),
     fields = fields[Unit, HumanSchemaValue](
-      Field(name = "id",       fieldType = LongType,              resolve = _.value.id),
-      Field(name = "name",     fieldType = StringType,            resolve = _.value.name),
-      Field(name = "episodes", fieldType = ListType(episodeEnum), resolve = _.value.episodes)
+      Field(name = "id",       fieldType = LongType,                resolve = _.value.id),
+      Field(name = "name",     fieldType = StringType,              resolve = _.value.name),
+      Field(name = "episodes", fieldType = ListType(episodeObject), resolve = _.value.episodes)
     )
   )
-
-  val idArgument = Argument("id", LongType)
-  val limitArgument = Argument("limit", IntType)
-  val offsetArgument = Argument("offset", IntType)
 
   def queries(implicit ec: ExecutionContext): List[Field[Unit, Unit]] = List(
     Field(
@@ -36,6 +32,15 @@ class HumanSchema @Inject()(
       fieldType = ListType(humanObject),
       arguments = limitArgument :: offsetArgument :: Nil,
       resolve = ctx => humanResolver.findAllHumans(ctx.arg(limitArgument), ctx.arg(offsetArgument))
+    )
+  )
+
+  def mutations(implicit ec: ExecutionContext): List[Field[Unit, Unit]] = List(
+    Field(
+      name = "createHuman",
+      fieldType = humanObject,
+      arguments = nameArgument :: homePlanetArgument :: episodesArgument :: Nil,
+      resolve = ctx => humanResolver.createHuman(ctx.arg(nameArgument), ctx.arg(homePlanetArgument), ctx.arg(episodesArgument))
     )
   )
 

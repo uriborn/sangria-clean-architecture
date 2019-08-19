@@ -1,5 +1,5 @@
 CREATE TABLE `droid` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `primary_function` VARCHAR(50),
   PRIMARY KEY (`id`)

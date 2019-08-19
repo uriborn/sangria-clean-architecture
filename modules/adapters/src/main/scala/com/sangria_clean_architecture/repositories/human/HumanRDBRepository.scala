@@ -1,7 +1,8 @@
 package com.sangria_clean_architecture.repositories.human
 
 import com.google.inject.Inject
-import com.sangria_clean_architecture.entities.human.{Human, HumanId}
+import com.sangria_clean_architecture.entities.episode.EpisodeId
+import com.sangria_clean_architecture.entities.human.{HomePlanet, Human, HumanId}
 import com.sangria_clean_architecture.gateway.repositories.HumanRepository
 import com.sangria_clean_architecture.repositories.episode.EpisodeTable
 import scalikejdbc._
@@ -13,7 +14,11 @@ class HumanRDBRepository @Inject()(
 ) extends HumanRepository {
 
   private val h = HumanTable.syntax("h")
+  private val hc = HumanTable.column
+
   private val he = HumanEpisodeTable.syntax("he")
+  private val hec = HumanEpisodeTable.column
+
   private val e = EpisodeTable.syntax("e")
 
   override def findAll(implicit ec: ExecutionContext): Future[List[Human]] = Future {
@@ -51,6 +56,43 @@ class HumanRDBRepository @Inject()(
         .single.apply
         .map(humanConverter.convertToEntity)
     }
+  }
+
+  override def create(name: String, homePlanet: Option[HomePlanet], episodes: List[EpisodeId])(implicit ec: ExecutionContext): Future[HumanId] = Future {
+    DB.localTx { implicit session =>
+      val humanId = createHuman(name, homePlanet)
+      createHumanEpisode(humanId, episodes)
+
+      humanId
+    }
+  }
+
+  private def createHuman(name: String, homePlanet: Option[HomePlanet])(implicit ec: ExecutionContext, session: DBSession): HumanId = {
+    val id = withSQL {
+      insert
+        .into(HumanTable)
+        .namedValues(
+          hc.name       -> name,
+          hc.homePlanet -> homePlanet.map(_.entryName)
+        )
+    }.updateAndReturnGeneratedKey().apply()
+
+    HumanId(id)
+  }
+
+  private def createHumanEpisode(humanId: HumanId, episodeIds: List[EpisodeId])(implicit ec: ExecutionContext, session: DBSession): Unit = {
+    episodeIds.map(createHumanEpisode(humanId, _))
+  }
+
+  private def createHumanEpisode(humanId: HumanId, episodeId: EpisodeId)(implicit ec: ExecutionContext, session: DBSession): Unit = {
+    withSQL {
+      insert
+        .into(HumanEpisodeTable)
+        .namedValues(
+          hec.humanId   -> humanId.value,
+          hec.episodeId -> episodeId.value
+        )
+    }.update().apply()
   }
 
   private def combineTables(

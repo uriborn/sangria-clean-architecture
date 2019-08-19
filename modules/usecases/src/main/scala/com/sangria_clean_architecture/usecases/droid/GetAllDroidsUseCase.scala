@@ -1,6 +1,7 @@
 package com.sangria_clean_architecture.usecases.droid
 
 import com.google.inject.Inject
+import com.sangria_clean_architecture.entities.episode.Episode
 import com.sangria_clean_architecture.gateway.repositories.DroidRepository
 import com.sangria_clean_architecture.usecases.UseCase
 
@@ -17,14 +18,20 @@ class GetAllDroidsUseCase @Inject()(
       GetAllDroidsOutput(
         id = droid.id.value,
         name = droid.name.value,
-        episodes = droid.episodes.map(_.entryName),
+        episodes = droid.episodes.map(convertEpisodeOutput),
         primaryFunction = droid.primaryFunction.map(_.entryName)
       )
     }.slice(inputData.offset, inputData.offset + inputData.limit)
   }
 
-}
+  private def convertEpisodeOutput(episode: Episode): GetAllDroidsEpisodeOutput = {
+    GetAllDroidsEpisodeOutput(
+      id = episode.id.value,
+      name = episode.name.value
+    )
+  }
 
+}
 
 case class GetAllDroidsInput(
   limit: Int,
@@ -34,6 +41,11 @@ case class GetAllDroidsInput(
 case class GetAllDroidsOutput(
   id: Long,
   name: String,
-  episodes: List[String],
+  episodes: List[GetAllDroidsEpisodeOutput],
   primaryFunction: Option[String]
+)
+
+case class GetAllDroidsEpisodeOutput(
+  id: Long,
+  name: String
 )

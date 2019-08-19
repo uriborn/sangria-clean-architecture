@@ -2,6 +2,7 @@ package com.sangria_clean_architecture.usecases.droid
 
 import com.google.inject.Inject
 import com.sangria_clean_architecture.entities.droid.DroidId
+import com.sangria_clean_architecture.entities.episode.Episode
 import com.sangria_clean_architecture.gateway.repositories.DroidRepository
 import com.sangria_clean_architecture.usecases.UseCase
 
@@ -18,9 +19,16 @@ class GetDroidUseCase @Inject()(
       GetDroidOutput(
         id = d.id.value,
         name = d.name.value,
-        episodes = d.episodes.map(_.entryName),
+        episodes = d.episodes.map(convertEpisodeOutput),
         primaryFunction = d.primaryFunction.map(_.entryName)
       )
+    )
+  }
+
+  private def convertEpisodeOutput(episode: Episode): GetDroidEpisodeOutput = {
+    GetDroidEpisodeOutput(
+      id = episode.id.value,
+      name = episode.name.value
     )
   }
 
@@ -33,6 +41,12 @@ case class GetDroidInput(
 case class GetDroidOutput(
   id: Long,
   name: String,
-  episodes: List[String],
+  episodes: List[GetDroidEpisodeOutput],
   primaryFunction: Option[String]
+)
+
+
+case class GetDroidEpisodeOutput(
+  id: Long,
+  name: String
 )
