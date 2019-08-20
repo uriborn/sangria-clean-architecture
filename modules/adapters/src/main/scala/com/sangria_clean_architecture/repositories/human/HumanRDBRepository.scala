@@ -2,11 +2,12 @@ package com.sangria_clean_architecture.repositories.human
 
 import com.google.inject.Inject
 import com.sangria_clean_architecture.entities.episode.EpisodeId
-import com.sangria_clean_architecture.entities.human.{HomePlanet, Human, HumanId}
+import com.sangria_clean_architecture.entities.human.{HomePlanet, Human, HumanId, HumanName}
 import com.sangria_clean_architecture.gateway.repositories.HumanRepository
 import com.sangria_clean_architecture.repositories.episode.EpisodeTable
-import scalikejdbc._
+import scalikejdbc.{update => updateS, _}
 
+import scala.collection.compat.Factory
 import scala.concurrent.{ExecutionContext, Future}
 
 class HumanRDBRepository @Inject()(
@@ -58,21 +59,31 @@ class HumanRDBRepository @Inject()(
     }
   }
 
-  override def create(name: String, homePlanet: Option[HomePlanet], episodes: List[EpisodeId])(implicit ec: ExecutionContext): Future[HumanId] = Future {
+  override def create(name: HumanName, homePlanet: Option[HomePlanet], episodeIds: List[EpisodeId])(implicit ec: ExecutionContext): Future[HumanId] = Future {
     DB.localTx { implicit session =>
       val humanId = createHuman(name, homePlanet)
-      createHumanEpisode(humanId, episodes)
+      createHumanEpisode(humanId, episodeIds)
 
       humanId
     }
   }
 
-  private def createHuman(name: String, homePlanet: Option[HomePlanet])(implicit ec: ExecutionContext, session: DBSession): HumanId = {
+  override def update(humanId: HumanId, name: HumanName, homePlanet: Option[HomePlanet], episodeIds: List[EpisodeId])(implicit ec: ExecutionContext): Future[Int] = Future {
+    DB.localTx { implicit session =>
+      val updated = updateHuman(humanId, name, homePlanet)
+      deleteHumanEpisode(humanId, episodeIds)
+      createHumanEpisode(humanId, episodeIds)
+
+      updated
+    }
+  }
+
+  private def createHuman(name: HumanName, homePlanet: Option[HomePlanet])(implicit session: DBSession): HumanId = {
     val id = withSQL {
       insert
         .into(HumanTable)
         .namedValues(
-          hc.name       -> name,
+          hc.name       -> name.value,
           hc.homePlanet -> homePlanet.map(_.entryName)
         )
     }.updateAndReturnGeneratedKey().apply()
@@ -80,19 +91,33 @@ class HumanRDBRepository @Inject()(
     HumanId(id)
   }
 
-  private def createHumanEpisode(humanId: HumanId, episodeIds: List[EpisodeId])(implicit ec: ExecutionContext, session: DBSession): Unit = {
-    episodeIds.map(createHumanEpisode(humanId, _))
+  private def updateHuman(humanId: HumanId, name: HumanName, homePlanet: Option[HomePlanet])(implicit session: DBSession): Int = {
+    withSQL {
+      updateS(HumanTable)
+        .set(
+          hc.name       -> name.value,
+          hc.homePlanet -> homePlanet.map(_.entryName)
+        ).where.eq(hc.id, humanId.value)
+    }.update().apply()
   }
 
-  private def createHumanEpisode(humanId: HumanId, episodeId: EpisodeId)(implicit ec: ExecutionContext, session: DBSession): Unit = {
+  private def deleteHumanEpisode(humanId: HumanId, episodeIds: List[EpisodeId])(implicit session: DBSession): Unit = {
+    withSQL {
+      delete.from(HumanEpisodeTable).where.eq(hec.humanId, humanId.value)
+    }.update().apply()
+  }
+
+  private def createHumanEpisode(humanId: HumanId, episodeIds: List[EpisodeId])(implicit session: DBSession): Unit = {
+    val params = episodeIds.map(episodeId => Seq(humanId.value, episodeId.value))
+
     withSQL {
       insert
         .into(HumanEpisodeTable)
         .namedValues(
-          hec.humanId   -> humanId.value,
-          hec.episodeId -> episodeId.value
+          hec.humanId   -> sqls.?,
+          hec.episodeId -> sqls.?
         )
-    }.update().apply()
+    }.batch(params: _*).apply()(session, implicitly[Factory[Int, Seq[Int]]])
   }
 
   private def combineTables(

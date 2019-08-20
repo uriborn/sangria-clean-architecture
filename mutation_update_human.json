@@ -1,0 +1,5 @@
+{
+  "query": "mutation { updateHuman(id: 6, name: \"Obi-Wan Kenobi\", homePlanet: \"Tatooine\", episodes: [{id: 3, name: \"Jedi\"}]) { id name episodes { name } } }",
+  "operationName": "operationName",
+  "variables": "variables"
+}

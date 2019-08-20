@@ -9,7 +9,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class HumanResolver @Inject()(
   getHumanUseCase: GetHumanUseCase,
   getAllHumansUseCase: GetAllHumansUseCase,
-  createHumanUseCase: CreateHumanUseCase
+  createHumanUseCase: CreateHumanUseCase,
+  updateHumanUseCase: UpdateHumanUseCase,
 ) {
 
   def findAllHumans(limit: Int, offset: Int)(implicit ec: ExecutionContext): Future[List[HumanSchemaValue]] = {
@@ -30,6 +31,12 @@ class HumanResolver @Inject()(
     } yield convertCreateHumanOutput(output)
   }
 
+  def updateHuman(humanId: Long, name: String, homePlanet: Option[String], episodes: Seq[Map[String, Any]])(implicit ec: ExecutionContext): Future[HumanSchemaValue] = {
+    for {
+      output <- updateHumanUseCase.execute(convertUpdateHumanInput(humanId, name, homePlanet, episodes))
+    } yield convertUpdateHumanOutput(output)
+  }
+
   private def convertCreateHumanInput(name: String, homePlanet: Option[String], episodes: Seq[Map[String, Any]]): CreateHumanInput = {
     val episodeInput = episodes.map { map =>
       val id = map("id").asInstanceOf[Long]
@@ -42,6 +49,25 @@ class HumanResolver @Inject()(
     }
 
     CreateHumanInput(
+      name = name,
+      homePlanet = homePlanet,
+      episodes = episodeInput.toList
+    )
+  }
+
+  private def convertUpdateHumanInput(humanId: Long, name: String, homePlanet: Option[String], episodes: Seq[Map[String, Any]]): UpdateHumanInput = {
+    val episodeInput = episodes.map { map =>
+      val id = map("id").asInstanceOf[Long]
+      val name = map("name").asInstanceOf[String]
+
+      UpdateHumanEpisodeInput(
+        id = id,
+        name = name
+      )
+    }
+
+    UpdateHumanInput(
+      id = humanId,
       name = name,
       homePlanet = homePlanet,
       episodes = episodeInput.toList
@@ -67,6 +93,15 @@ class HumanResolver @Inject()(
   }
 
   private def convertCreateHumanOutput(output: CreateHumanOutput): HumanSchemaValue = {
+    HumanSchemaValue(
+      id = output.id,
+      name = output.name,
+      episodes = output.episodes.map(e => convertEpisodeSchemaValue(e.id, e.name)),
+      homePlanet = output.homePlanet
+    )
+  }
+
+  private def convertUpdateHumanOutput(output: UpdateHumanOutput): HumanSchemaValue = {
     HumanSchemaValue(
       id = output.id,
       name = output.name,

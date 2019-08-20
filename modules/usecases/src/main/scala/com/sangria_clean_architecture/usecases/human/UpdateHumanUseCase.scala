@@ -2,29 +2,29 @@ package com.sangria_clean_architecture.usecases.human
 
 import com.google.inject.Inject
 import com.sangria_clean_architecture.entities.episode.EpisodeId
-import com.sangria_clean_architecture.entities.human.{HomePlanet, HumanName}
+import com.sangria_clean_architecture.entities.human.{HomePlanet, HumanId, HumanName}
 import com.sangria_clean_architecture.gateway.repositories.HumanRepository
 import com.sangria_clean_architecture.usecases.UseCase
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateHumanUseCase @Inject()(
+class UpdateHumanUseCase @Inject()(
   humanRepository: HumanRepository
-) extends UseCase[CreateHumanInput, CreateHumanOutput] {
+) extends UseCase[UpdateHumanInput, UpdateHumanOutput] {
 
-  override def execute(inputData: CreateHumanInput)(implicit ec: ExecutionContext): Future[CreateHumanOutput] = {
+  override def execute(inputData: UpdateHumanInput)(implicit ec: ExecutionContext): Future[UpdateHumanOutput] = {
     for {
-      humanId <- humanRepository.create(HumanName(inputData.name), inputData.homePlanetDomainModel, inputData.episodeIds)
-    } yield CreateHumanOutput(
-      id = humanId.value,
+      _ <- humanRepository.update(HumanId(inputData.id), HumanName(inputData.name), inputData.homePlanetDomainModel, inputData.episodeIds)
+    } yield UpdateHumanOutput(
+      id = inputData.id,
       name = inputData.name,
       episodes = inputData.episodes.map(convertEpisodeOutput),
       homePlanet = inputData.homePlanet
     )
   }
 
-  private def convertEpisodeOutput(episode: CreateHumanEpisodeInput): CreateHumanEpisodeOutput = {
-    CreateHumanEpisodeOutput(
+  private def convertEpisodeOutput(episode: UpdateHumanEpisodeInput): UpdateHumanEpisodeOutput = {
+    UpdateHumanEpisodeOutput(
       id = episode.id,
       name = episode.name
     )
@@ -32,10 +32,11 @@ class CreateHumanUseCase @Inject()(
 
 }
 
-case class CreateHumanInput(
+case class UpdateHumanInput(
+  id: Long,
   name: String,
   homePlanet: Option[String],
-  episodes: List[CreateHumanEpisodeInput]
+  episodes: List[UpdateHumanEpisodeInput]
 ) {
 
   val homePlanetDomainModel = homePlanet.map(HomePlanet.withName)
@@ -43,19 +44,19 @@ case class CreateHumanInput(
 
 }
 
-case class CreateHumanEpisodeInput(
+case class UpdateHumanEpisodeInput(
   id: Long,
   name: String
 )
 
-case class CreateHumanOutput(
+case class UpdateHumanOutput(
   id: Long,
   name: String,
-  episodes: List[CreateHumanEpisodeOutput],
+  episodes: List[UpdateHumanEpisodeOutput],
   homePlanet: Option[String]
 )
 
-case class CreateHumanEpisodeOutput(
+case class UpdateHumanEpisodeOutput(
   id: Long,
   name: String
 )

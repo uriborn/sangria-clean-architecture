@@ -41,6 +41,12 @@ class HumanSchema @Inject()(
       fieldType = humanObject,
       arguments = nameArgument :: homePlanetArgument :: episodesArgument :: Nil,
       resolve = ctx => humanResolver.createHuman(ctx.arg(nameArgument), ctx.arg(homePlanetArgument), ctx.arg(episodesArgument))
+    ),
+    Field(
+      name = "updateHuman",
+      fieldType = humanObject,
+      arguments = idArgument :: nameArgument :: homePlanetArgument :: episodesArgument :: Nil,
+      resolve = ctx => humanResolver.updateHuman(ctx.arg(idArgument), ctx.arg(nameArgument), ctx.arg(homePlanetArgument), ctx.arg(episodesArgument))
     )
   )
 
